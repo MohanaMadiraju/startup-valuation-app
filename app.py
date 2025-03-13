@@ -1,6 +1,6 @@
 import streamlit as st
 
-def calculate_valuation(revenue, growth_rate, operating_margin, depreciation, interest, tax_rate, capex, working_capital, discount_rate, terminal_growth, investment, pre_money_shares):
+def calculate_valuation(revenue, growth_rate, operating_margin, depreciation, interest, tax_rate, capex, working_capital, discount_rate, terminal_growth, investment, pre_money_shares, esop_pool):
     projected_revenue = revenue * (1 + growth_rate)
     operating_profit = projected_revenue * operating_margin
     ebit = operating_profit - depreciation
@@ -15,9 +15,9 @@ def calculate_valuation(revenue, growth_rate, operating_margin, depreciation, in
     post_money_valuation = pre_money_valuation + investment
     dilution = investment / post_money_valuation
     investor_stake = dilution * 100
-    founder_stake = 100 - investor_stake
+    founder_stake = 100 - investor_stake - esop_pool
     
-    return pre_money_valuation, post_money_valuation, investor_stake, founder_stake
+    return pre_money_valuation, post_money_valuation, investor_stake, founder_stake, esop_pool
 
 st.title("🚀 Startup Valuation Calculator")
 st.image("https://cdn-icons-png.flaticon.com/512/4727/4727251.png", width=100)
@@ -37,19 +37,22 @@ with st.form("valuation_form"):
     terminal_growth = st.number_input("Terminal Growth Rate (%)", value=3.0, format="%.2f") / 100
     investment = st.number_input("Investment Amount", value=500000.0, format="%.2f")
     pre_money_shares = st.number_input("Pre-Money Shares Outstanding", value=1000000.0, format="%.2f")
+    esop_pool = st.number_input("ESOP Pool (% of Equity)", value=10.0, format="%.2f")
     submit_button = st.form_submit_button("Calculate Valuation")
 
 if submit_button:
-    pre_money, post_money, investor_stake, founder_stake = calculate_valuation(
+    pre_money, post_money, investor_stake, founder_stake, esop_pool = calculate_valuation(
         revenue, growth_rate, operating_margin, depreciation, interest, tax_rate,
-        capex, working_capital, discount_rate, terminal_growth, investment, pre_money_shares
+        capex, working_capital, discount_rate, terminal_growth, investment, pre_money_shares, esop_pool
     )
     
     st.subheader("📊 Valuation Results")
     st.success(f"**Pre-Money Valuation:** ₹{pre_money:,.2f}")
     st.success(f"**Post-Money Valuation:** ₹{post_money:,.2f}")
     st.info(f"**Investor Stake:** {investor_stake:.2f}%")
-    st.info(f"**Founder Stake:** {founder_stake:.2f}%")
+    st.info(f"**Founder Stake (after ESOP):** {founder_stake:.2f}%")
+    st.info(f"**ESOP Pool:** {esop_pool:.2f}%")
 
 st.caption("Created with ❤️ by a CA passionate about valuations!")
+
 
